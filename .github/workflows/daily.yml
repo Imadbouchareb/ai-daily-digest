@@ -1,0 +1,32 @@
+name: Daily AI Digest
+
+on:
+  schedule:
+    # 9h00 Paris = 8h00 UTC (hiver) / 7h00 UTC (été).
+    # On programme à 7h UTC pour garantir "avant 9h Paris" toute l'année.
+    # Tu peux ajuster si tu veux 9h pile toute l'année.
+    - cron: "0 7 * * *"
+  workflow_dispatch:  # Bouton "Run workflow" pour tester à la demande
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate and send digest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RECIPIENT: ${{ secrets.RECIPIENT }}
+        run: python digest.py
